@@ -11,7 +11,7 @@ use VMware::VILib;
 use Archive::Zip qw( :ERROR_CODES :CONSTANTS );
 use File::Path;
 
-my $scriptVersion = 1.2;
+my $scriptVersion = 1.3;
 
 my %opts = (
    reportname => {
@@ -35,7 +35,7 @@ Util::connect();
 
 my $reportName = Opts::get_option('reportname');
 my $debug = Opts::get_option('debug');
-my $uniqueID;
+my ($uniqueID,$startTime,$endTime);
 my ($hostCount,$vmCount,$vmdkCount,$datastoreCount,$lunCount,$clusterCount) = (0,0,0,0,0,0);
 my $dirName = "vopendata";
 
@@ -62,11 +62,17 @@ Util::disconnect();
 &generateZip;
 
 sub getvCenterUUID {
+	print "Retrieving vCenterUUID Info...\n";
+	$startTime = time();
 	my $sc = Vim::get_service_content();
 	$uniqueID = $sc->about->instanceUuid;
+	$endTime = time();
+	print "vCenterUUID Info took " . ($endTime - $startTime) . " seconds\n\n";
 }
 
 sub getvCenterInfo {
+	print "Retrieving vCenter Data...\n";
+	$startTime = time();
 	my $vcString = "s_vcenter,instanceUuid,vcVersion,vcBuild,hostCount,vmCount,vmdkCount,datastoreCount,lunCount,clusterCount" . "\n";	
 
 	my $sc = Vim::get_service_content();
@@ -83,9 +89,13 @@ sub getvCenterInfo {
 	open(CSV_REPORT_OUTPUT, ">$dirName/version.txt");
 	print CSV_REPORT_OUTPUT $scriptVersion;
 	close(CSV_REPORT_OUTPUT);	
+	$endTime = time();
+	print "vCenter Info took " . ($endTime - $startTime) . " seconds\n\n";
 }
 
 sub getHostInfo {
+	print "Retrieving Host Info ...\n";
+	$startTime = time();
 	my $hostString = "s_host,vcInstanceUUID,hostUuid,hostState,hostVersion,hostBuild,hostVendor,hostModel,hostCPUVendor,hostCPUSocket,hostCPUCore,hostCPUSpeed,hostCPUThread,hostMem,hostHBA,hostNic,hostCPUUsage,hostMemUsage,hostUptime,hostDSs,hostVMs" . "\n";
         my $lunString = "s_lun,vcInstanceUUID,lunUuid,lunVendor,lunCapacity" . "\n";
 	my $hostOutput = "$dirName/host-stats.csv";
@@ -142,9 +152,13 @@ sub getHostInfo {
         open(CSV_REPORT_OUTPUT, ">$lunOutput");
         print CSV_REPORT_OUTPUT $lunString;
         close(CSV_REPORT_OUTPUT);
+	$endTime = time();
+	print "Host Info took " . ($endTime - $startTime) . " seconds\n\n";
 }
 
 sub getVMInfo {
+	print "Retrieving VM Info...\n";
+	$startTime = time();
         my $vmString = "s_vm,vcInstanceUUID,vmUuid,vmState,vmOS,vmCPU,vmMem,vmNic,vmDisk,vmCPUUsage,vmMemUsage,vmCPUResv,vmMemResv,vmStorageTot,vmStorageUsed,vmUptime,vmFT,vmVHW" . "\n";
         my $vmdkString = "s_vmdk,vcInstanceUUID,vmdkKey,vmdkType,vmdkCapacity" . "\n";
 	my $vmOutput = "$dirName/vm-stats.csv";
@@ -212,9 +226,13 @@ sub getVMInfo {
         open(CSV_REPORT_OUTPUT, ">$vmdkOutput");
         print CSV_REPORT_OUTPUT $vmdkString;
         close(CSV_REPORT_OUTPUT);
+	$endTime = time();
+	print "VM Info took " . ($endTime - $startTime) . " seconds\n\n";
 }
 
 sub getDatastoreInfo {
+	print "Retrieving Datastore Info ...\n";
+	$startTime = time();
         my $datastoreString = "s_datastore,vcInstanceUUID,dsUuid,dsType,dsSSD,dsVMFSVersion,dsCapacity,dsFree,dsVMs" . "\n";
 	my $datastoreOutput = "$dirName/datastore-stats.csv";
 
@@ -241,9 +259,13 @@ sub getDatastoreInfo {
         open(CSV_REPORT_OUTPUT, ">$datastoreOutput");
         print CSV_REPORT_OUTPUT $datastoreString;
         close(CSV_REPORT_OUTPUT);
+	$endTime = time();
+	print "Datastore Info took " . ($endTime - $startTime) . " seconds\n\n";
 }
 
 sub getClusterInfo {
+	print "Retrieving Cluster Info ...\n";
+	$startTime = time();
 	my $clusterString = "s_cluster,vcInstanceUUID,clusterUuid,clusterTotCpu,clusterTotMem,clusterAvailCpu,clusterAvailMem,clusterHA,clusterDRS,clusterHost,clusterDatastore,clusterVM" . "\n";	
 	my $clusterOutput = "$dirName/cluster-stats.csv";
 
@@ -271,16 +293,22 @@ sub getClusterInfo {
 	open(CSV_REPORT_OUTPUT, ">$clusterOutput");
 	print CSV_REPORT_OUTPUT $clusterString;
 	close(CSV_REPORT_OUTPUT);
+	$endTime = time();
+	print "Cluster Info took " . ($endTime - $startTime) . " seconds\n\n";
 }
 
 sub generateZip {
+	print "Generating zip file ...\n";
+	$startTime = time();
 	my $zipObj = Archive::Zip->new();
 	$zipObj->addTree($dirName);
 	unless ($zipObj->writeToFileNamed($reportName) == AZ_OK) {
 		print "Error: Unable to write " . $reportName . "\n";
 	}
-	print "Succesfully created " . $reportName . "\n\n";	
 	rmtree($dirName);
+	$endTime = time();
+	print "Zip generation took " . ($endTime - $startTime) . " seconds\n\n";
+	print "Succesfully created " . $reportName . "\n\n";
 }
 
 # prompt user taken from http://devdaily.com/perl/edu/articles/pl010005#comment-159
