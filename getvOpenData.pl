@@ -92,8 +92,11 @@ sub getHostInfo {
 		my $hostVersion = $vmhost->{'config.product'}->version;
 		my $hostBuild = $vmhost->{'config.product'}->build;
 		my $hostVendor = $vmhost->{'summary.hardware'}->vendor;
+		$hostVendor =~ s/,//g;
 		my $hostModel = $vmhost->{'summary.hardware'}->model;
+		$hostModel =~ s/,//g;
 		my $hostCPUVendor = $vmhost->{'summary.hardware'}->cpuModel;
+		$hostCPUVendor =~ s/,//g;
 		my $hostCPUSocket = $vmhost->{'summary.hardware'}->numCpuPkgs;
 		my $hostCPUCore = $vmhost->{'summary.hardware'}->numCpuCores;
 		my $hostCPUSpeed = $vmhost->{'summary.hardware'}->cpuMhz;
@@ -146,6 +149,7 @@ sub getVMInfo {
 		my $vmUuid = $vm->{'summary.config'}->instanceUuid;
 		my $vmState = $vm->{'summary.runtime.powerState'}->val;
 		my $vmOS = $vm->{'summary.config'}->guestFullName;
+		$vmOS =~ s/,//g;
 		my $vmCPU = $vm->{'summary.config'}->numCpu;
 		my $vmMem = $vm->{'summary.config'}->memorySizeMB;
 		my $vmNic = $vm->{'summary.config'}->numEthernetCards;

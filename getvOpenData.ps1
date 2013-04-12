@@ -153,7 +153,7 @@ Function Get-VMInfo {
 		$vmRow.vcInstanceUUID = $global:uniqueId
 		$vmRow.vmUuid = $vm.Summary.Config.InstanceUuid
 		$vmRow.vmState = $vm.Summary.Runtime.PowerState
-		$vmRow.vmOS = $vm.Summary.Config.GuestFullName
+		$vmRow.vmOS = ($vm.Summary.Config.GuestFullName).replace(",","")
 		$vmRow.vmCPU = $vm.Summary.Config.NumCpu
 		$vmRow.vmMem = $vm.Summary.Config.MemorySizeMB
 		$vmRow.vmNic = $vm.Summary.Config.NumEthernetCards
