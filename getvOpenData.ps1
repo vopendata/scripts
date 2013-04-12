@@ -17,6 +17,7 @@ and store the data in CSV format in the vopendata-stats.zip file in your desktop
 Author: 
 	William Lam (www.virtuallyghetto.com)
 Change Log:
+	Version 1.4 - Added timings for each section to the screen
 	Version 1.3 - Adding version.txt 
 	Version 1.2 - Fixed issues with commas on host entries
 	Version 1.1 - Fixed multiple issues
@@ -63,7 +64,7 @@ $csvReportName = "vopendata-stats.zip"
 
 ## DO NOT EDIT BEYOND HERE ##
 
-$global:scriptVersion = 1.3
+$global:scriptVersion = 1.4
 $global:desktopPath = (Get-Item env:\USERPROFILE).value + "\desktop\"
 $global:desktopPathDir = $global:desktopPath + "vopendata\"
 $global:uniqueId = ""
@@ -315,12 +316,36 @@ Write-Host "This may take a second or two depending on the size of your environm
 
 New-Item -ItemType directory -Path $global:desktopPathDir -Force | Out-Null
 
-Get-vCenterUUID
-Get-HostInfo
-Get-VMInfo
-Get-DatastoreInfo
-Get-ClusterInfo
-Get-vCenterInfo
+#vCenterUUID Info
+Write-Host "Retrieving vCenterUUID Info..."
+$vcdata = Measure-Command { Get-vCenterUUID }
+Write-Host "vCenterUUID Info took $($vcdata.Seconds) Seconds"
+
+#Host Info
+Write-Host "Retrieving Host Info..."
+$vcdata = Measure-Command { Get-HostInfo }
+Write-Host "Host Info took $($vcdata.Seconds) Seconds"
+
+#VM Info
+Write-Host "Retrieving VM Info..."
+$vcdata = Measure-Command { Get-VMInfo }
+Write-Host "VM Info took $($vcdata.Seconds) Seconds"
+
+#Datastore Info
+Write-Host "Retrieving Datastore Info..."
+$vcdata = Measure-Command { Get-DatastoreInfo }
+Write-Host "Datastore Info took $($vcdata.Seconds) Seconds"
+
+#Cluster Info
+Write-Host "Retrieving Cluster Info..."
+$vcdata = Measure-Command { Get-ClusterInfo }
+Write-Host "Cluster Info took $($vcdata.Seconds) Seconds"
+
+#vCenter Data
+Write-Host "Retrieving vCenter Data..."
+$vcdata = Measure-Command { Get-vCenterInfo }
+Write-Host "vCenter data took $($vcdata.Seconds) Seconds"
+
 Create-ZipFile
 
 if (!$alreadyconnected){
