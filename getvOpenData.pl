@@ -11,6 +11,8 @@ use VMware::VILib;
 use Archive::Zip qw( :ERROR_CODES :CONSTANTS );
 use File::Path;
 
+my $scriptVersion = 1.2;
+
 my %opts = (
    reportname => {
       type => "=s",
@@ -77,6 +79,10 @@ sub getvCenterInfo {
 	open(CSV_REPORT_OUTPUT, ">$dirName/vc-stats.csv");
 	print CSV_REPORT_OUTPUT $vcString;
 	close(CSV_REPORT_OUTPUT);
+
+	open(CSV_REPORT_OUTPUT, ">$dirName/version.txt");
+	print CSV_REPORT_OUTPUT $scriptVersion;
+	close(CSV_REPORT_OUTPUT);	
 }
 
 sub getHostInfo {

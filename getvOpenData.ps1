@@ -17,6 +17,7 @@ and store the data in CSV format in the vopendata-stats.zip file in your desktop
 Author: 
 	William Lam (www.virtuallyghetto.com)
 Change Log:
+	Version 1.3 - Adding version.txt 
 	Version 1.2 - Fixed issues with commas on host entries
 	Version 1.1 - Fixed multiple issues
  
@@ -62,6 +63,7 @@ $csvReportName = "vopendata-stats.zip"
 
 ## DO NOT EDIT BEYOND HERE ##
 
+$global:scriptVersion = 1.3
 $global:desktopPath = (Get-Item env:\USERPROFILE).value + "\desktop\"
 $global:desktopPathDir = $global:desktopPath + "vopendata\"
 $global:uniqueId = ""
@@ -269,6 +271,7 @@ Function Get-ClusterInfo {
 
 Function Get-vCenterInfo {
 	$vcCSV = $global:desktopPathDir + "vc-stats.csv"
+	$versionFile = $global:desktopPathDir + "version.txt"
 	$vcReport = @()
 	$vcSchema = "s_vcenter,instanceUuid,vcVersion,vcBuild,hostCount,vmCount,vmdkCount,datastoreCount,lunCount,clusterCount"
 	$vcReport += $vcSchema
@@ -287,13 +290,15 @@ Function Get-vCenterInfo {
 	$vcRow.clusterCount = $global:clusterCount
 	$vcReport += $vcRow | ConvertTo-Csv -NoTypeInformation | Select-Object -Skip 1
 	$vcReport | % { $_ -replace '"', ""} | Out-File $vcCSV -Force -Encoding "UTF8"
+	
+	$global:scriptVersion | Out-File $versionFile -Force -Encoding "UTF8"
 }
 
 Function Create-ZipFile {
 	$zipFileName = $global:desktopPath + $csvReportName
 	set-content $zipFileName ("PK" + [char]5 + [char]6 + ("$([char]0)" * 18)) 
 	$zipFile = (new-object -com shell.application).NameSpace($zipFileName)
-	Foreach ($csvfile in Get-ChildItem $global:desktopPathDir "*.csv") {
+	Foreach ($csvfile in (Get-Childitem -Path ($global:desktopPathDir + "*") -Include ("*.csv","*.txt"))) {
 		$zipFile.CopyHere($csvfile.fullname)
 		# Adding a little sleep in the process in order to avoid access error in zip file
 		do {
