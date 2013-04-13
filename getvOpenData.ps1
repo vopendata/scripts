@@ -17,6 +17,7 @@ and store the data in CSV format in the vopendata-stats.zip file in your desktop
 Author: 
 	William Lam (www.virtuallyghetto.com)
 Change Log:
+	Version 1.7 - Fixed zip issue + using NAA identifier for LUNs
 	Version 1.6 - Added unique LUN tracking & fixed datastore typo 
 	Version 1.5 - Added vCenter instanceUUID check
 	Version 1.4 - Added timings for each section to the screen
@@ -136,14 +137,14 @@ Function Get-HostInfo {
 		foreach ($lun in $luns) {
 			$lunRow = "" | select DataType,vcInstanceUUID,lunUuid,lunVendor,lunCapacity
 			if($lun -is [VMware.Vim.HostScsiDisk]) {
-					$lunRow.DataType = "lun"
-					$lunRow.vcInstanceUUID = $global:uniqueId
-					$lunRow.lunUuid = $lun.Uuid
-					$lunRow.lunVendor = $lun.Vendor
-					$lunRow.lunCapacity = $lun.capacity.block * $lun.capacity.BlockSize
-					$lunReport += $lunRow | ConvertTo-Csv -NoTypeInformation | Select-Object -Skip 1
-					if($lunList.Contains($lun.Uuid) -eq $false) {
-						$lunList.add($lun.Uuid,"seen")
+					if($lunList.Contains($lun.CanonicalName) -eq $false) {
+						$lunRow.DataType = "lun"
+						$lunRow.vcInstanceUUID = $global:uniqueId
+						$lunRow.lunUuid = $lun.CanonicalName
+						$lunRow.lunVendor = $lun.Vendor
+						$lunRow.lunCapacity = $lun.capacity.block * $lun.capacity.BlockSize
+						$lunReport += $lunRow | ConvertTo-Csv -NoTypeInformation | Select-Object -Skip 1
+						$lunList.add($lun.CanonicalName,"seen")
 					}
 			}
 		}
@@ -311,20 +312,20 @@ Function Get-vCenterInfo {
 }
 
 Function Create-ZipFile {
-	$zipFileName = $global:desktopPath + $csvReportName
-	set-content $zipFileName ("PK" + [char]5 + [char]6 + ("$([char]0)" * 18)) 
-	$zipFile = (new-object -com shell.application).NameSpace($zipFileName)
-	Foreach ($csvfile in (Get-Childitem -Path ($global:desktopPathDir + "*") -Include ("*.csv","*.txt"))) {
-		$zipFile.CopyHere($csvfile.fullname)
-		# Adding a little sleep in the process in order to avoid access error in zip file
-		do {
-			Start-sleep -milliseconds 500
-		} until (($zipFile.Items() | Where { $_.Name -eq $csvfile.Name }).size -eq $csvfile.length)
-	}
-	Write-Host "Succesfully created " $csvReportName
-	Remove-Item -Recurse -Force $global:desktopPathDir
-}
+      Write-Host "Adding files to" $csvReportName
+      $zipFileName = $global:desktopPath + $csvReportName
+      set-content $zipFileName ("PK" + [char]5 + [char]6 + ("$([char]0)" * 18))
+      $zipFile = (new-object -com shell.application).NameSpace($zipFileName)
 
+      Foreach ($csvfile in (Get-Childitem -Path ($global:desktopPathDir + "*") -Include ("*.csv","*.txt"))) {
+            Write-Host "..$($csvfile.name)"
+            $zipFile.MoveHere($csvfile.fullname)
+            # Adding a little sleep in the process in order to avoid access error in zip file
+            do { Start-Sleep -Milliseconds 500 } until (-not (Test-Path $csvfile.FullName))
+      }
+      Write-Host "Successfully created $($global:desktopPath)$csvReportName now upload this file to http://vOpenData.org"
+      Remove-Item -Recurse -Force $global:desktopPathDir
+}
 
 Write-Host "`nCollecting vSphere Stats & Generating" $csvReportName "..."
 Write-Host "This may take a second or two depending on the size of your environment. Go ahead and check out vopendata.org to see what you can expect while you are waiting`n"
