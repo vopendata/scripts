@@ -11,7 +11,7 @@ use VMware::VILib;
 use Archive::Zip qw( :ERROR_CODES :CONSTANTS );
 use File::Path;
 
-my $scriptVersion = 1.3;
+my $scriptVersion = 1.4;
 
 my %opts = (
    reportname => {
@@ -65,9 +65,14 @@ sub getvCenterUUID {
 	print "Retrieving vCenterUUID Info...\n";
 	$startTime = time();
 	my $sc = Vim::get_service_content();
-	$uniqueID = $sc->about->instanceUuid;
-	$endTime = time();
-	print "vCenterUUID Info took " . ($endTime - $startTime) . " seconds\n\n";
+	if(defined($sc->about->instanceUuid)) {
+		$uniqueID = $sc->about->instanceUuid;
+		$endTime = time();
+		print "vCenterUUID Info took " . ($endTime - $startTime) . " seconds\n\n";
+	} else {
+		print "This script is only supported on vCenter Server 4.0 or greater\n";
+		exit 1;
+	}
 }
 
 sub getvCenterInfo {

@@ -17,6 +17,7 @@ and store the data in CSV format in the vopendata-stats.zip file in your desktop
 Author: 
 	William Lam (www.virtuallyghetto.com)
 Change Log:
+	Version 1.5 - Added vCenter instanceUUID check
 	Version 1.4 - Added timings for each section to the screen
 	Version 1.3 - Adding version.txt 
 	Version 1.2 - Fixed issues with commas on host entries
@@ -77,7 +78,16 @@ $global:clusterCount = 0
 
 Function Get-vCenterUUID {
 	$sc = $vcenter.ExtensionData.Content
-	$global:uniqueId = $sc.About.InstanceUuid
+	# vSphere 4.0+ or greater is supported
+	if($sc.About.InstanceUuid) {
+		$global:uniqueId = $sc.About.InstanceUuid
+	} else {
+		if (!$alreadyconnected){
+			Disconnect-VIServer -Server $vcenter -Confirm:$false
+		}
+		Write-Error "This script is only supported on vCenter Server 4.0 or greater"
+		exit
+	}
 }
 
 Function Get-HostInfo {
