@@ -142,14 +142,14 @@ sub getHostInfo {
 		my $luns = $storageSys->storageDeviceInfo->scsiLun;
 		foreach my $lun (@$luns) {
 			if($lun->lunType eq "disk" && $lun->isa('HostScsiDisk')) {
-				my $lunUuid = $lun->uuid;
+				my $lunUuid = $lun->canonicalName;
 				my $lunVendor = $lun->vendor;
-				my $lunCapacity = $lun->capacity->block * $lun->capacity->blockSize;
 				if(!defined($lunList{$lunUuid})) {
+					my $lunVendor = $lun->vendor;
+					my $lunCapacity = $lun->capacity->block * $lun->capacity->blockSize;
+					$lunString .= "lun,$uniqueID,$lunUuid,$lunVendor,$lunCapacity" . "\n";
 					$lunList{$lunUuid} = "seen";
 				}
-
-				$lunString .= "lun,$uniqueID,$lunUuid,$lunVendor,$lunCapacity" . "\n";
 			}
 		}
 	}
