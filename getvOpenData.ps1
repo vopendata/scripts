@@ -17,6 +17,7 @@ and store the data in CSV format in the vopendata-stats.zip file in your desktop
 Author: 
 	William Lam (www.virtuallyghetto.com)
 Change Log:
+	Version 1.6 - Added unique LUN tracking & fixed datastore typo 
 	Version 1.5 - Added vCenter instanceUUID check
 	Version 1.4 - Added timings for each section to the screen
 	Version 1.3 - Adding version.txt 
@@ -99,6 +100,7 @@ Function Get-HostInfo {
 	$lunCSV = $global:desktopPathDir +  "lun-stats.csv"
 	$hostReport += $hostSchema
 	$lunReport += $lunSChema
+	$lunList = @{}
 
 	$vmhosts = Get-View -Server $vcenter -ViewType HostSystem -Property Config.Product,Summary.Hardware,Summary.Runtime,Summary.QuickStats,ConfigManager.StorageSystem,Datastore,VM -Filter @{'Summary.Runtime.ConnectionState'='connected'}
 
@@ -140,10 +142,13 @@ Function Get-HostInfo {
 					$lunRow.lunVendor = $lun.Vendor
 					$lunRow.lunCapacity = $lun.capacity.block * $lun.capacity.BlockSize
 					$lunReport += $lunRow | ConvertTo-Csv -NoTypeInformation | Select-Object -Skip 1
-					$global:lunCount++
+					if($lunList.Contains($lun.Uuid) -eq $false) {
+						$lunList.add($lun.Uuid,"seen")
+					}
 			}
 		}
 	}
+	$global:lunCount = $lunList.Count
 	$hostReport | % { $_ -replace '"', ""} | Out-File $hostCSV -Force -Encoding "UTF8"
 	$lunReport | % { $_ -replace '"', ""} | Out-File $lunCSV -Force -Encoding "UTF8"
 }
@@ -240,7 +245,7 @@ Function Get-DatastoreInfo {
 		$dsRow.dsCapacity = $datastore.Summary.Capacity
 		$dsRow.dsFree = $datastore.Summary.FreeSpace
 		$dsRow.dsVMs = ($datastore.Vm | Measure-Object).Count
-		$global:datastoreClount++
+		$global:datastoreCount++
 		$dsReport += $dsRow | ConvertTo-Csv -NoTypeInformation | Select-Object -Skip 1
 	}
 	$dsReport | % { $_ -replace '"', ""} | Out-File $dsCSV -Force -Encoding "UTF8"
@@ -296,7 +301,7 @@ Function Get-vCenterInfo {
 	$vcRow.hostCount = $global:hostCount
 	$vcRow.vmCount = $global:vmCount
 	$vcRow.vmdkCount = $global:vmdkCount
-	$vcRow.datastoreCount = $global:datastoreClount
+	$vcRow.datastoreCount = $global:datastoreCount
 	$vcRow.lunCount = $global:lunCount
 	$vcRow.clusterCount = $global:clusterCount
 	$vcReport += $vcRow | ConvertTo-Csv -NoTypeInformation | Select-Object -Skip 1

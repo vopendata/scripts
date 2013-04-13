@@ -11,7 +11,7 @@ use VMware::VILib;
 use Archive::Zip qw( :ERROR_CODES :CONSTANTS );
 use File::Path;
 
-my $scriptVersion = 1.4;
+my $scriptVersion = 1.5;
 
 my %opts = (
    reportname => {
@@ -105,7 +105,8 @@ sub getHostInfo {
         my $lunString = "s_lun,vcInstanceUUID,lunUuid,lunVendor,lunCapacity" . "\n";
 	my $hostOutput = "$dirName/host-stats.csv";
 	my $lunOutput = "$dirName/lun-stats.csv";
-
+	my %lunList = ();
+	
 	my $vmhosts = Vim::find_entity_views(view_type => 'HostSystem', properties => ['config.product','summary.hardware','summary.runtime','summary.quickStats','configManager.storageSystem','datastore','vm'], filter => {'summary.runtime.connectionState' => 'connected'});
 	foreach my $vmhost (@$vmhosts) {
 		my $hostUuid = $vmhost->{'summary.hardware'}->uuid;
@@ -144,12 +145,16 @@ sub getHostInfo {
 				my $lunUuid = $lun->uuid;
 				my $lunVendor = $lun->vendor;
 				my $lunCapacity = $lun->capacity->block * $lun->capacity->blockSize;
-				$lunCount++;
+				if(!defined($lunList{$lunUuid})) {
+					$lunList{$lunUuid} = "seen";
+				}
 
 				$lunString .= "lun,$uniqueID,$lunUuid,$lunVendor,$lunCapacity" . "\n";
 			}
 		}
 	}
+	$lunCount = scalar(keys %lunList);
+
 	open(CSV_REPORT_OUTPUT, ">$hostOutput");
         print CSV_REPORT_OUTPUT $hostString;
         close(CSV_REPORT_OUTPUT);
