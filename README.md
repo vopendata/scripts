@@ -9,12 +9,14 @@ Usage:
 
 	./getvOpenData.pl --server <VCENTER-SERVER> --username <USERNAME> --zipname <NAME.zip>
 
-Example(s):
+Interactive Example:
 
 	./getvOpenData.pl
 	Though the data that is collected is already anonymized and non-identifying, please ensure that you are abiding by the privacy policies of your organization when uploading this data. If you are concerned about the data, it is recommended that you audit the zip contents before uploading which are just CSV files. We only ask that you do not modify the schema at all.
 
 	By typing yes and accepting this agreement, your anonymized data can be used for public data repositories [yes|no]:
+
+Example 1:
 
 	./getvOpenData.pl --server myvcenter.cor.local --username root --zipname myvc1.zip
 
@@ -27,13 +29,18 @@ Usage:
 
 	.\getvOpenData.ps1 -vcname <VCENTER-SERVER> -port <VCENTER-PORT> -zipname <NAME.zip>
 
-Example(s): 
+Interactive Example: 
 
 	.\getvOpenData.ps1
 	Though the data that is collected is already anonymized and non-identifying, ple ase ensure that you are abiding by the privacy policies of your organization when uploading this data. If you are concerned about the data, it is recommended that you audit the zip contents before uploading which are just CSV files. We only ask that you do not modify the schema at all.By typing yes and accepting this agreement, your anonymized data can be used for public data repositories [yes|no]:
 	Please Enter Your vCenter Server : [VCENTER-SERVER]
 
+Example 1:
+
 	.\getvOpenData.ps1 -vcname "myvcenter.cor.local" 
+
+
+Example 2:
 
 	.\getvOpenData.ps1 -vcname "myvcenter.cor.local" -port 443 -zipname myvc1.zip 
 
