@@ -14,7 +14,7 @@ use File::Path;
 my $scriptVersion = 1.5;
 
 my %opts = (
-   reportname => {
+   zipname => {
       type => "=s",
       help => "Name of output file",
       required => 0,
@@ -33,7 +33,7 @@ Opts::parse();
 Opts::validate();
 Util::connect();
 
-my $reportName = Opts::get_option('reportname');
+my $zipName = Opts::get_option('zipname');
 my $debug = Opts::get_option('debug');
 my ($uniqueID,$startTime,$endTime);
 my ($hostCount,$vmCount,$vmdkCount,$datastoreCount,$lunCount,$clusterCount) = (0,0,0,0,0,0);
@@ -312,13 +312,13 @@ sub generateZip {
 	$startTime = time();
 	my $zipObj = Archive::Zip->new();
 	$zipObj->addTree($dirName);
-	unless ($zipObj->writeToFileNamed($reportName) == AZ_OK) {
-		print "Error: Unable to write " . $reportName . "\n";
+	unless ($zipObj->writeToFileNamed($zipName) == AZ_OK) {
+		print "Error: Unable to write " . $zipName . "\n";
 	}
 	rmtree($dirName);
 	$endTime = time();
 	print "Zip generation took " . ($endTime - $startTime) . " seconds\n\n";
-	print "Succesfully created " . $reportName . "\n\n";
+	print "Succesfully created " . $zipName . "\n\n";
 }
 
 # prompt user taken from http://devdaily.com/perl/edu/articles/pl010005#comment-159
