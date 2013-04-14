@@ -69,7 +69,7 @@ if (!$vcenter.IsConnected){
 
 ## DO NOT EDIT BEYOND HERE ##
 
-$global:scriptVersion = 1.4
+$global:scriptVersion = 1.8
 $global:desktopPath = (Get-Item env:\USERPROFILE).value + "\desktop\"
 $global:desktopPathDir = $global:desktopPath + "vopendata\"
 $global:uniqueId = ""
