@@ -17,6 +17,7 @@ and store the data in CSV format in the vopendata-stats.zip file in your desktop
 Author: 
 	William Lam (www.virtuallyghetto.com)
 Change Log:
+	Version 1.9 - Verify dsSSD property is defined
 	Version 1.8 - Added CLI option to provide name of zip file
 	Version 1.7 - Fixed zip issue + using NAA identifier for LUNs
 	Version 1.6 - Added unique LUN tracking & fixed datastore typo 
@@ -69,7 +70,7 @@ if (!$vcenter.IsConnected){
 
 ## DO NOT EDIT BEYOND HERE ##
 
-$global:scriptVersion = 1.8
+$global:scriptVersion = 1.9
 $global:desktopPath = (Get-Item env:\USERPROFILE).value + "\desktop\"
 $global:desktopPathDir = $global:desktopPath + "vopendata\"
 $global:uniqueId = ""
@@ -241,7 +242,7 @@ Function Get-DatastoreInfo {
 		$dsRow.dsType = $datastore.Summary.Type
 		$dsRow.dsSSD = $false
 		$dsRow.dsVMFSVersion = "N/A"
-		if($dsRow.dsType -eq "VMFS") {
+		if($dsRow.dsType -eq "VMFS" -and $datastore.Info.Vmfs.Ssd) {
 			$dsRow.dsSSD = $datastore.Info.Vmfs.Ssd 
 			$dsRow.dsVMFSVersion = $datastore.Info.Vmfs.Version
 		}
